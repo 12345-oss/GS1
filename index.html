@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OMCP - Orbital Mission Control Platform</title>
+  <style>
+    :root {
+      --bg: #111318;
+      --surface: #1b1e24;
+      --surface-2: #23272f;
+      --line: #353a45;
+      --text: #f2f0ea;
+      --muted: #aeb6c4;
+      --teal: #2fc4a7;
+      --green: #78c86b;
+      --amber: #e0a321;
+      --red: #e15353;
+      --violet: #8b72ff;
+      --blue: #5b8def;
+      --shadow: 0 18px 48px rgba(0, 0, 0, .32);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.45;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #171a20;
+      border-right: 1px solid var(--line);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 52px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #5e6676;
+      background: radial-gradient(circle at 50% 50%, #e8edf5 0 14%, #32404d 15% 24%, transparent 25%),
+        conic-gradient(from 20deg, var(--teal), var(--blue), var(--amber), var(--teal));
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 6px #111318;
+      flex: 0 0 auto;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button,
+    .ghost-button,
+    .primary-button,
+    .mini-button,
+    .danger-button {
+      border-radius: 8px;
+      min-height: 38px;
+      transition: transform .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .nav button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: var(--muted);
+      background: transparent;
+      text-align: left;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      color: var(--text);
+      background: #242833;
+    }
+
+    .nav-code {
+      width: 30px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      border: 1px solid #4a5262;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 70px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: #14171d;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .mission-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .content {
+      padding: 24px;
+      min-width: 0;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .screen-header h2 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .screen-header p,
+    .panel p,
+    .muted {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 116px;
+      display: grid;
+      gap: 8px;
+      align-content: center;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      font-size: 27px;
+      letter-spacing: 0;
+    }
+
+    .status-pill,
+    .severity,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      min-height: 28px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .ok {
+      color: var(--green);
+      border-color: rgba(120, 200, 107, .45);
+      background: rgba(120, 200, 107, .12);
+    }
+
+    .warn {
+      color: var(--amber);
+      border-color: rgba(224, 163, 33, .45);
+      background: rgba(224, 163, 33, .12);
+    }
+
+    .critical {
+      color: #ff8585;
+      border-color: rgba(225, 83, 83, .5);
+      background: rgba(225, 83, 83, .14);
+    }
+
+    .info {
+      color: #a9c7ff;
+      border-color: rgba(91, 141, 239, .5);
+      background: rgba(91, 141, 239, .14);
+    }
+
+    .primary-button,
+    .ghost-button,
+    .mini-button,
+    .danger-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 13px;
+      color: var(--text);
+      border: 1px solid transparent;
+    }
+
+    .primary-button {
+      background: var(--teal);
+      color: #07130f;
+      font-weight: 700;
+    }
+
+    .ghost-button {
+      background: #252a34;
+      border-color: var(--line);
+    }
+
+    .danger-button {
+      background: rgba(225, 83, 83, .18);
+      border-color: rgba(225, 83, 83, .45);
+      color: #ffb3b3;
+    }
+
+    .mini-button {
+      min-height: 30px;
+      padding: 6px 9px;
+      font-size: 12px;
+      background: #262b35;
+      border-color: #424957;
+    }
+
+    .primary-button:hover,
+    .ghost-button:hover,
+    .mini-button:hover,
+    .danger-button:hover,
+    .nav button:hover {
+      transform: translateY(-1px);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      background: #20242c;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      min-height: 40px;
+      color: var(--text);
+      background: #12151b;
+      border: 1px solid #414856;
+      border-radius: 8px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .bar-chart {
+      height: 220px;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(20px, 1fr));
+      align-items: end;
+      gap: 9px;
+      padding: 14px 0 4px;
+    }
+
+    .bar {
+      min-height: 12px;
+      border-radius: 7px 7px 3px 3px;
+      background: linear-gradient(180deg, var(--teal), #276d68);
+      position: relative;
+    }
+
+    .bar.warn-bar {
+      background: linear-gradient(180deg, var(--amber), #735515);
+    }
+
+    .bar.critical-bar {
+      background: linear-gradient(180deg, var(--red), #7f2c32);
+    }
+
+    .bar span {
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 11px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 92px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline-item:last-child {
+      border-bottom: 0;
+    }
+
+    .orbit-canvas {
+      width: 100%;
+      height: min(54vh, 520px);
+      min-height: 360px;
+      background: #080a0f;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: block;
+    }
+
+    .command-feed {
+      display: grid;
+      gap: 10px;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .feed-line {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #20242c;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      color: #d8e2ef;
+    }
+
+    .risk-block {
+      min-height: 154px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .risk-number {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: #101319;
+      overflow: hidden;
+      border: 1px solid #3a414e;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
+    }
+
+    .report-box {
+      white-space: pre-wrap;
+      min-height: 250px;
+      margin: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101319;
+      color: #dce6f5;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      overflow: auto;
+    }
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(330px, 460px) minmax(0, 1fr);
+      background: #101218;
+    }
+
+    .login-form {
+      padding: 44px;
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      border-right: 1px solid var(--line);
+      background: #171a20;
+    }
+
+    .login-form h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .login-form .brand-mark {
+      width: 54px;
+      height: 54px;
+    }
+
+    .login-visual {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 36px;
+    }
+
+    .orbital-stage {
+      width: min(78vw, 760px);
+      aspect-ratio: 1 / .74;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 52%, #405160 0 9%, #16212c 10% 16%, transparent 17%),
+        repeating-radial-gradient(circle at 50% 52%, transparent 0 72px, rgba(255, 255, 255, .10) 73px 74px),
+        linear-gradient(140deg, #080a0f, #141820 58%, #0d1016);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .orbital-stage::before,
+    .orbital-stage::after {
+      content: "";
+      position: absolute;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 18px var(--teal);
+    }
+
+    .orbital-stage::before {
+      top: 29%;
+      left: 24%;
+    }
+
+    .orbital-stage::after {
+      right: 23%;
+      bottom: 24%;
+      background: var(--amber);
+      box-shadow: 0 0 18px var(--amber);
+    }
+
+    .visual-caption {
+      position: absolute;
+      left: 54px;
+      bottom: 42px;
+      display: grid;
+      gap: 7px;
+      max-width: 380px;
+    }
+
+    .visual-caption strong {
+      font-size: 22px;
+    }
+
+    .locked .shell {
+      grid-template-columns: 1fr;
+    }
+
+    .locked .sidebar,
+    .locked .topbar {
+      display: none;
+    }
+
+    .locked .content {
+      padding: 0;
+    }
+
+    .locked .screen:not(#screen-login) {
+      display: none;
+    }
+
+    .split-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .inline-check input {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--teal);
+    }
+
+    @media (max-width: 1120px) {
+      .grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        grid-template-columns: 220px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .nav button {
+        justify-content: flex-start;
+      }
+
+      .topbar,
+      .screen-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .login-screen {
+        grid-template-columns: 1fr;
+      }
+
+      .login-form {
+        padding: 30px 20px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .login-visual {
+        min-height: 330px;
+        padding: 18px;
+      }
+
+      .visual-caption {
+        left: 28px;
+        right: 28px;
+        bottom: 28px;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="locked">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navegacao principal">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <strong>OMCP</strong>
+          <span>Mission Control</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="active" data-nav="dashboard" title="Dashboard"><span class="nav-code">DB</span><span>Dashboard</span></button>
+        <button data-nav="telemetry" title="Telemetria"><span class="nav-code">TL</span><span>Telemetria</span></button>
+        <button data-nav="alerts" title="Alertas"><span class="nav-code">AL</span><span>Alertas</span></button>
+        <button data-nav="prediction" title="Predicao"><span class="nav-code">IA</span><span>Predicao</span></button>
+        <button data-nav="orbit" title="Mapa orbital"><span class="nav-code">OR</span><span>Mapa orbital</span></button>
+        <button data-nav="commands" title="Comandos"><span class="nav-code">CM</span><span>Comandos</span></button>
+        <button data-nav="modules" title="Modulos"><span class="nav-code">MD</span><span>Modulos</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-pill ok">Link DSN-03 ativo</span>
+        <button class="ghost-button" id="logout" type="button">Sair da missao</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="screenTitle">Dashboard operacional</h1>
+          <p class="muted">Missao APT6M8 - Orbita baixa terrestre</p>
+        </div>
+        <div class="mission-status">
+          <span class="status-pill ok">Saude 94%</span>
+          <span class="status-pill warn">2 alertas altos</span>
+          <span id="clock">T+ 00:00:00</span>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="screen active" id="screen-login">
+          <div class="login-screen">
+            <form class="login-form">
+              <div class="brand-mark" aria-hidden="true"></div>
+              <div>
+                <h1>Orbital Mission Control Platform</h1>
+                <p class="muted">Controle integrado de missao espacial</p>
+              </div>
+              <label>
+                Usuario operacional
+                <input value="operador.missao@omcp.local" autocomplete="username">
+              </label>
+              <label>
+                Perfil
+                <select id="profileSelect">
+                  <option>Operador de Missao</option>
+                  <option>Engenheiro de Sistemas</option>
+                  <option>Coordenador de Missao</option>
+                  <option>Analista de Confiabilidade</option>
+                </select>
+              </label>
+              <label>
+                Missao
+                <select id="missionSelect">
+                  <option>APT6M8 - Orbita baixa terrestre</option>
+                  <option>HELIOS-R - Comunicacao interplanetaria</option>
+                  <option>ARES-SUPPLY - Suporte autonomo</option>
+                </select>
+              </label>
+              <button class="primary-button" id="startMission" type="button">Entrar no sistema</button>
+            </form>
+            <div class="login-visual" aria-hidden="true">
+              <div class="orbital-stage"></div>
+              <div class="visual-caption">
+                <strong>Telemetria, alertas e predicao em uma unica operacao.</strong>
+                <span class="muted">Status sintetico: sensores 128, modulos 12, risco global 18%.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-dashboard">
+          <div class="screen-header">
+            <div>
+              <h2>Dashboard operacional</h2>
+              <p>Indicadores consolidados da missao ativa.</p>
+            </div>
+            <div class="split-actions">
+              <button class="ghost-button" data-nav="alerts" type="button">Ver alertas</button>
+              <button class="primary-button" data-nav="commands" type="button">Novo comando</button>
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="metric"><span>Saude da missao</span><strong>94%</strong><span class="status-pill ok">Estavel</span></div>
+            <div class="metric"><span>Latencia media</span><strong>1.4s</strong><span class="status-pill ok">RNF01 atendido</span></div>
+            <div class="metric"><span>Eventos por minuto</span><strong>42k</strong><span class="status-pill info">Alta carga</span></div>
+            <div class="metric"><span>Risco de falha</span><strong>18%</strong><span class="status-pill warn">Monitorar</span></div>
+          </div>
+
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="panel">
+              <h3>Linha do tempo</h3>
+              <div class="timeline">
+                <div class="timeline-item"><span>14:22:08</span><strong>Normalizacao concluida</strong><span class="tag ok">OK</span></div>
+                <div class="timeline-item"><span>14:25:31</span><strong>Temperatura THR-A7 em atencao</strong><span class="tag warn">Alto</span></div>
+                <div class="timeline-item"><span>14:27:10</span><strong>IA gerou recomendacao</strong><span class="tag info">IA</span></div>
+                <div class="timeline-item"><span>14:28:44</span><strong>Comunicacao DSN-03 estabilizada</strong><span class="tag ok">OK</span></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Fila critica</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>ID</th><th>Origem</th><th>Severidade</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td>AL-304</td><td>THR-A7</td><td><span class="severity critical">Critico</span></td><td>Aberto</td></tr>
+                    <tr><td>AL-299</td><td>PWR-02</td><td><span class="severity warn">Alto</span></td><td>Em analise</td></tr>
+                    <tr><td>AL-287</td><td>COM-DSN</td><td><span class="severity info">Medio</span></td><td>Monitorado</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-telemetry">
+          <div class="screen-header">
+            <div>
+              <h2>Telemetria de sensores</h2>
+              <p>Leituras normalizadas por origem, unidade e periodo.</p>
+            </div>
+            <span class="status-pill ok">128 sensores conectados</span>
+          </div>
+
+          <div class="panel">
+            <div class="toolbar">
+              <label style="max-width: 320px;">
+                Sensor
+                <select id="sensorSelect">
+                  <option value="thermal">THR-A7 - Temperatura do propulsor</option>
+                  <option value="power">PWR-02 - Barramento de energia</option>
+                  <option value="comm">COM-DSN - Comunicacao profunda</option>
+                  <option value="radiation">RAD-11 - Radiacao externa</option>
+                </select>
+              </label>
+              <span class="status-pill" id="sensorStatus">Atencao</span>
+            </div>
+
+            <div class="grid-3">
+              <div class="metric"><span>Leitura atual</span><strong id="currentReading">82.4 C</strong><span id="readingNote">Limite 85 C</span></div>
+              <div class="metric"><span>Qualidade do dado</span><strong id="qualityReading">98%</strong><span>Normalizado</span></div>
+              <div class="metric"><span>Eventos analisados</span><strong id="eventsReading">12.410</strong><span>Ultimos 15 min</span></div>
+            </div>
+
+            <div class="bar-chart" id="telemetryChart" aria-label="Grafico de telemetria"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-alerts">
+          <div class="screen-header">
+            <div>
+              <h2>Alertas criticos</h2>
+              <p>Classificacao, atribuicao e encerramento de incidentes.</p>
+            </div>
+            <span class="status-pill critical" id="openAlertCount">3 alertas abertos</span>
+          </div>
+
+          <div class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Origem</th><th>Mensagem</th><th>Severidade</th><th>Status</th><th>Responsavel</th><th>Acoes</th></tr>
+                </thead>
+                <tbody id="alertsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-prediction">
+          <div class="screen-header">
+            <div>
+              <h2>Analise preditiva</h2>
+              <p>Risco calculado por comportamento historico e telemetria atual.</p>
+            </div>
+            <button class="primary-button" id="runPrediction" type="button">Executar IA</button>
+          </div>
+
+          <div class="grid-3">
+            <div class="risk-block">
+              <span class="muted">THR-A7 - propulsao</span>
+              <strong class="risk-number" id="riskThr">76%</strong>
+              <div class="progress" style="--value: 76%;"><span></span></div>
+              <span class="status-pill critical">Falha possivel em 9h</span>
+            </div>
+            <div class="risk-block">
+              <span class="muted">PWR-02 - energia</span>
+              <strong class="risk-number">41%</strong>
+              <div class="progress" style="--value: 41%;"><span></span></div>
+              <span class="status-pill warn">Revisar carga</span>
+            </div>
+            <div class="risk-block">
+              <span class="muted">COM-DSN - comunicacao</span>
+              <strong class="risk-number">23%</strong>
+              <div class="progress" style="--value: 23%;"><span></span></div>
+              <span class="status-pill ok">Estavel</span>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top: 14px;">
+            <h3>Recomendacao ativa</h3>
+            <div class="timeline">
+              <div class="timeline-item"><span>Entrada</span><strong>Aumento continuo de temperatura no propulsor THR-A7</strong><span class="tag warn">Tendencia</span></div>
+              <div class="timeline-item"><span>Modelo</span><strong>Deteccao de anomalia por serie temporal e limite operacional</strong><span class="tag info">IA</span></div>
+              <div class="timeline-item"><span>Acao</span><strong>Reduzir carga do modulo em 8% e reavaliar em 15 minutos</strong><span class="tag critical">Critico</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-orbit">
+          <div class="screen-header">
+            <div>
+              <h2>Mapa orbital</h2>
+              <p>Visualizacao operacional de orbita, ativos e enlaces.</p>
+            </div>
+            <button class="ghost-button" id="focusOrbit" type="button">Atualizar foco</button>
+          </div>
+
+          <div class="grid-2">
+            <canvas class="orbit-canvas" id="orbitCanvas"></canvas>
+            <div class="panel">
+              <h3>Enlaces e ativos</h3>
+              <div class="timeline">
+                <div class="timeline-item"><span>OMCP-01</span><strong>Nave principal em orbita baixa</strong><span class="tag ok">Online</span></div>
+                <div class="timeline-item"><span>DSN-03</span><strong>Estacao de comunicacao profunda</strong><span class="tag ok">Ativo</span></div>
+                <div class="timeline-item"><span>Relay-K</span><strong>Modulo de repeticao com perda intermitente</strong><span class="tag warn">Oscilando</span></div>
+                <div class="timeline-item"><span>Payload-X</span><strong>Experimento cientifico com telemetria nominal</strong><span class="tag info">Nominal</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-commands">
+          <div class="screen-header">
+            <div>
+              <h2>Comandos e comunicacao</h2>
+              <p>Envio simulado de comandos para modulos distribuidos.</p>
+            </div>
+            <span class="status-pill ok">Canal seguro ativo</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <h3>Novo comando</h3>
+              <div class="stack">
+                <label>
+                  Modulo
+                  <select id="commandModule">
+                    <option>THR-A7 - Propulsao</option>
+                    <option>PWR-02 - Energia</option>
+                    <option>COM-DSN - Comunicacao</option>
+                    <option>PAYLOAD-X - Experimento</option>
+                  </select>
+                </label>
+                <label>
+                  Acao
+                  <select id="commandAction">
+                    <option>Reduzir carga operacional em 8%</option>
+                    <option>Reiniciar handshake de comunicacao</option>
+                    <option>Ativar modo de economia de energia</option>
+                    <option>Solicitar pacote completo de diagnostico</option>
+                  </select>
+                </label>
+                <label>
+                  Payload
+                  <textarea id="commandPayload">{"priority":"high","source":"OMCP","audit":true}</textarea>
+                </label>
+                <label class="inline-check">
+                  <input id="confirmCommand" type="checkbox">
+                  Confirmar permissao operacional
+                </label>
+                <div class="split-actions">
+                  <button class="primary-button" id="sendCommand" type="button">Enviar comando</button>
+                  <button class="ghost-button" id="clearCommand" type="button">Limpar</button>
+                </div>
+                <span class="muted" id="commandStatus">Aguardando validacao.</span>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Canal de comunicacao</h3>
+              <div class="command-feed" id="commandFeed"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-modules">
+          <div class="screen-header">
+            <div>
+              <h2>Modulos, auditoria e relatorios</h2>
+              <p>Estado dos sistemas monitorados e rastreabilidade operacional.</p>
+            </div>
+            <button class="primary-button" id="generateReport" type="button">Gerar relatorio</button>
+          </div>
+
+          <div class="grid-3">
+            <div class="metric"><span>THR-A7</span><strong>Atencao</strong><span class="status-pill warn">Temperatura alta</span></div>
+            <div class="metric"><span>PWR-02</span><strong>Nominal</strong><span class="status-pill ok">Carga 71%</span></div>
+            <div class="metric"><span>COM-DSN</span><strong>Estavel</strong><span class="status-pill ok">Perda 0.03%</span></div>
+          </div>
+
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="panel">
+              <h3>Auditoria</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Horario</th><th>Evento</th><th>Resultado</th></tr></thead>
+                  <tbody id="auditTable"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Relatorio operacional</h3>
+              <pre class="report-box" id="reportBox">Relatorio ainda nao gerado.</pre>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const screenTitles = {
+      dashboard: "Dashboard operacional",
+      telemetry: "Telemetria de sensores",
+      alerts: "Alertas criticos",
+      prediction: "Analise preditiva",
+      orbit: "Mapa orbital",
+      commands: "Comandos e comunicacao",
+      modules: "Modulos, auditoria e relatorios"
+    };
+
+    const telemetryData = {
+      thermal: {
+        status: "Atencao",
+        pill: "warn",
+        current: "82.4 C",
+        note: "Limite 85 C",
+        quality: "98%",
+        events: "12.410",
+        values: [58, 60, 63, 67, 70, 74, 76, 78, 80, 81, 82, 84]
+      },
+      power: {
+        status: "Nominal",
+        pill: "ok",
+        current: "71%",
+        note: "Reserva 19%",
+        quality: "99%",
+        events: "10.988",
+        values: [72, 73, 71, 70, 69, 70, 71, 72, 71, 70, 71, 71]
+      },
+      comm: {
+        status: "Oscilando",
+        pill: "warn",
+        current: "0.03%",
+        note: "Perda de pacote",
+        quality: "96%",
+        events: "8.120",
+        values: [12, 10, 15, 18, 24, 21, 18, 16, 22, 28, 19, 14]
+      },
+      radiation: {
+        status: "Estavel",
+        pill: "ok",
+        current: "0.8 mSv",
+        note: "Limite 1.2 mSv",
+        quality: "97%",
+        events: "6.440",
+        values: [18, 19, 20, 21, 21, 22, 23, 22, 21, 20, 20, 21]
+      }
+    };
+
+    let alerts = [
+      { id: "AL-304", source: "THR-A7", message: "Temperatura do propulsor acima do limite", severity: "Critico", status: "Aberto", owner: "Nao atribuido" },
+      { id: "AL-299", source: "PWR-02", message: "Consumo energetico acima da media prevista", severity: "Alto", status: "Em analise", owner: "Eng. Sistemas" },
+      { id: "AL-287", source: "COM-DSN", message: "Oscilacao de enlace em janela curta", severity: "Medio", status: "Monitorado", owner: "Operador" }
+    ];
+
+    let auditLog = [
+      { time: "14:22:08", event: "Normalizacao de telemetria concluida", result: "OK" },
+      { time: "14:25:31", event: "Alerta AL-304 criado por regra de limite", result: "Critico" },
+      { time: "14:27:10", event: "IA gerou recomendacao para THR-A7", result: "Registrado" }
+    ];
+
+    let orbitFocus = 0;
+
+    function nowTime() {
+      return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function addAudit(event, result = "Registrado") {
+      auditLog.unshift({ time: nowTime(), event, result });
+      renderAudit();
+    }
+
+    function showScreen(name) {
+      const target = document.getElementById(`screen-${name}`);
+      if (!target) return;
+
+      document.body.classList.toggle("locked", name === "login");
+      document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("active"));
+      target.classList.add("active");
+      document.querySelectorAll("[data-nav]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.nav === name);
+      });
+
+      if (screenTitles[name]) {
+        document.getElementById("screenTitle").textContent = screenTitles[name];
+      }
+
+      if (name === "orbit") {
+        resizeOrbitCanvas();
+      }
+    }
+
+    document.querySelectorAll("[data-nav]").forEach((button) => {
+      button.addEventListener("click", () => showScreen(button.dataset.nav));
+    });
+
+    document.getElementById("startMission").addEventListener("click", () => {
+      const profile = document.getElementById("profileSelect").value;
+      addAudit(`Login realizado como ${profile}`, "OK");
+      showScreen("dashboard");
+    });
+
+    document.getElementById("logout").addEventListener("click", () => {
+      addAudit("Sessao encerrada pelo usuario", "OK");
+      showScreen("login");
+    });
+
+    function renderTelemetry(key = "thermal") {
+      const data = telemetryData[key];
+      const status = document.getElementById("sensorStatus");
+      status.textContent = data.status;
+      status.className = `status-pill ${data.pill}`;
+      document.getElementById("currentReading").textContent = data.current;
+      document.getElementById("readingNote").textContent = data.note;
+      document.getElementById("qualityReading").textContent = data.quality;
+      document.getElementById("eventsReading").textContent = data.events;
+
+      const max = Math.max(...data.values);
+      document.getElementById("telemetryChart").innerHTML = data.values.map((value, index) => {
+        const height = Math.max(12, Math.round((value / max) * 100));
+        const cls = height > 88 ? "critical-bar" : height > 72 ? "warn-bar" : "";
+        return `<div class="bar ${cls}" style="height:${height}%"><span>${index + 1}</span></div>`;
+      }).join("");
+    }
+
+    document.getElementById("sensorSelect").addEventListener("change", (event) => {
+      renderTelemetry(event.target.value);
+      addAudit(`Filtro de telemetria alterado para ${event.target.options[event.target.selectedIndex].text}`, "OK");
+    });
+
+    function severityClass(severity) {
+      if (severity === "Critico") return "critical";
+      if (severity === "Alto") return "warn";
+      return "info";
+    }
+
+    function renderAlerts() {
+      document.getElementById("alertsTable").innerHTML = alerts.map((alert) => `
+        <tr>
+          <td>${alert.id}</td>
+          <td>${alert.source}</td>
+          <td>${alert.message}</td>
+          <td><span class="severity ${severityClass(alert.severity)}">${alert.severity}</span></td>
+          <td>${alert.status}</td>
+          <td>${alert.owner}</td>
+          <td>
+            <div class="split-actions">
+              <button class="mini-button" data-alert="${alert.id}" data-action="ack" type="button">Ciente</button>
+              <button class="mini-button" data-alert="${alert.id}" data-action="assign" type="button">Atribuir</button>
+              <button class="mini-button" data-alert="${alert.id}" data-action="close" type="button">Encerrar</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      const openCount = alerts.filter((alert) => alert.status !== "Encerrado").length;
+      document.getElementById("openAlertCount").textContent = `${openCount} alertas abertos`;
+    }
+
+    document.getElementById("alertsTable").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-alert]");
+      if (!button) return;
+
+      const alert = alerts.find((item) => item.id === button.dataset.alert);
+      if (!alert) return;
+
+      if (button.dataset.action === "ack") {
+        alert.status = "Reconhecido";
+        addAudit(`Alerta ${alert.id} reconhecido`, "OK");
+      }
+
+      if (button.dataset.action === "assign") {
+        alert.owner = "Operador";
+        alert.status = "Em tratamento";
+        addAudit(`Alerta ${alert.id} atribuido ao operador`, "OK");
+      }
+
+      if (button.dataset.action === "close") {
+        alert.status = "Encerrado";
+        addAudit(`Incidente do alerta ${alert.id} encerrado`, "OK");
+      }
+
+      renderAlerts();
+    });
+
+    document.getElementById("runPrediction").addEventListener("click", () => {
+      const risk = document.getElementById("riskThr");
+      risk.textContent = risk.textContent === "76%" ? "81%" : "76%";
+      addAudit("Modelo preditivo executado para THR-A7", "Risco atualizado");
+    });
+
+    function renderAudit() {
+      const table = document.getElementById("auditTable");
+      if (!table) return;
+      table.innerHTML = auditLog.slice(0, 8).map((item) => `
+        <tr>
+          <td>${item.time}</td>
+          <td>${item.event}</td>
+          <td>${item.result}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderCommandFeed() {
+      const feed = document.getElementById("commandFeed");
+      feed.innerHTML = [
+        "[14:21:08] RX DSN-03 handshake confirmado",
+        "[14:23:40] TX THR-A7 status request aceito",
+        "[14:26:19] RX PAYLOAD-X pacote cientifico recebido",
+        "[14:28:44] RX COM-DSN perda estabilizada em 0.03%"
+      ].map((line) => `<div class="feed-line">${line}</div>`).join("");
+    }
+
+    document.getElementById("sendCommand").addEventListener("click", () => {
+      const confirmed = document.getElementById("confirmCommand").checked;
+      const status = document.getElementById("commandStatus");
+      if (!confirmed) {
+        status.textContent = "Permissao operacional obrigatoria.";
+        status.style.color = "#ffb3b3";
+        return;
+      }
+
+      const moduleName = document.getElementById("commandModule").value;
+      const action = document.getElementById("commandAction").value;
+      const line = `[${nowTime()}] TX ${moduleName} - ${action}`;
+      document.getElementById("commandFeed").insertAdjacentHTML("afterbegin", `<div class="feed-line">${line}</div>`);
+      status.textContent = "Comando validado, enviado e auditado.";
+      status.style.color = "#9fe3d6";
+      addAudit(`Comando enviado para ${moduleName}`, "OK");
+    });
+
+    document.getElementById("clearCommand").addEventListener("click", () => {
+      document.getElementById("commandPayload").value = "{\"priority\":\"normal\",\"source\":\"OMCP\",\"audit\":true}";
+      document.getElementById("confirmCommand").checked = false;
+      document.getElementById("commandStatus").textContent = "Aguardando validacao.";
+    });
+
+    document.getElementById("generateReport").addEventListener("click", () => {
+      document.getElementById("reportBox").textContent = [
+        "RELATORIO OPERACIONAL - OMCP",
+        `Gerado em: ${nowTime()}`,
+        "Missao: APT6M8",
+        "Saude geral: 94%",
+        "Eventos processados: 42.000/min",
+        "Alertas criticos: AL-304",
+        "Risco preditivo principal: THR-A7 com 76%",
+        "Recomendacao: reduzir carga operacional em 8% e reavaliar em 15 minutos.",
+        "Auditoria: comandos, alertas e acessos registrados."
+      ].join("\\n");
+      addAudit("Relatorio operacional gerado", "OK");
+    });
+
+    function resizeOrbitCanvas() {
+      const canvas = document.getElementById("orbitCanvas");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(600, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(360, Math.floor(rect.height * ratio));
+    }
+
+    function drawOrbit(time = 0) {
+      const canvas = document.getElementById("orbitCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.min(w, h) * .14;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#080a0f";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "rgba(255,255,255,.62)";
+      for (let i = 0; i < 64; i += 1) {
+        const x = (i * 97 + 41) % w;
+        const y = (i * 53 + 29) % h;
+        ctx.fillRect(x, y, 1.4, 1.4);
+      }
+
+      ctx.strokeStyle = "rgba(255,255,255,.18)";
+      ctx.lineWidth = 2;
+      [1.7, 2.45, 3.15].forEach((scale) => {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, radius * scale, radius * scale * .52, -.28, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      const earth = ctx.createRadialGradient(cx - radius * .35, cy - radius * .35, radius * .2, cx, cy, radius * 1.2);
+      earth.addColorStop(0, "#dbeaf2");
+      earth.addColorStop(.32, "#5b8def");
+      earth.addColorStop(.7, "#204653");
+      earth.addColorStop(1, "#11161d");
+      ctx.fillStyle = earth;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      const assets = [
+        { name: "OMCP-01", scale: 1.7, color: "#2fc4a7", phase: 0 },
+        { name: "Relay-K", scale: 2.45, color: "#e0a321", phase: 1.9 },
+        { name: "Payload-X", scale: 3.15, color: "#5b8def", phase: 3.6 }
+      ];
+
+      assets.forEach((asset, index) => {
+        const angle = time * .00045 + asset.phase + orbitFocus * .25;
+        const x = cx + Math.cos(angle) * radius * asset.scale;
+        const y = cy + Math.sin(angle) * radius * asset.scale * .52;
+
+        ctx.strokeStyle = index === 1 ? "rgba(224,163,33,.5)" : "rgba(47,196,167,.38)";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        ctx.fillStyle = asset.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#f2f0ea";
+        ctx.font = "13px Segoe UI";
+        ctx.fillText(asset.name, x + 12, y - 10);
+      });
+
+      requestAnimationFrame(drawOrbit);
+    }
+
+    document.getElementById("focusOrbit").addEventListener("click", () => {
+      orbitFocus += 1;
+      addAudit("Foco do mapa orbital atualizado", "OK");
+    });
+
+    window.addEventListener("resize", resizeOrbitCanvas);
+
+    setInterval(() => {
+      document.getElementById("clock").textContent = `T+ ${nowTime()}`;
+    }, 1000);
+
+    renderTelemetry();
+    renderAlerts();
+    renderAudit();
+    renderCommandFeed();
+    resizeOrbitCanvas();
+    requestAnimationFrame(drawOrbit);
+  </script>
+</body>
+</html>
